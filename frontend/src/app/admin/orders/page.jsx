@@ -7,94 +7,70 @@ export default function AdminOrders() {
   const [orders, setOrders] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [filterStatus, setFilterStatus] = useState("")
+  const [error, setError] = useState(null)
+  const [token, setToken] = useState("")
+  
+  const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000"
 
   useEffect(() => {
-    // In a real app, you would fetch this data from your API
-    // For now, we'll use mock data
-    setTimeout(() => {
-      setOrders([
-        {
-          id: 1001,
-          customer: "John Doe",
-          email: "john@example.com",
-          date: "2023-04-15",
-          total: 125.99,
-          status: "Delivered",
-          method: "delivery",
-        },
-        {
-          id: 1002,
-          customer: "Jane Smith",
-          email: "jane@example.com",
-          date: "2023-04-15",
-          total: 89.5,
-          status: "Processing",
-          method: "pickup",
-        },
-        {
-          id: 1003,
-          customer: "Robert Johnson",
-          email: "robert@example.com",
-          date: "2023-04-14",
-          total: 245.0,
-          status: "Pending",
-          method: "delivery",
-        },
-        {
-          id: 1004,
-          customer: "Emily Davis",
-          email: "emily@example.com",
-          date: "2023-04-14",
-          total: 65.25,
-          status: "Delivered",
-          method: "pickup",
-        },
-        {
-          id: 1005,
-          customer: "Michael Brown",
-          email: "michael@example.com",
-          date: "2023-04-13",
-          total: 178.5,
-          status: "Shipped",
-          method: "delivery",
-        },
-        {
-          id: 1006,
-          customer: "Sarah Wilson",
-          email: "sarah@example.com",
-          date: "2023-04-13",
-          total: 112.75,
-          status: "Cancelled",
-          method: "delivery",
-        },
-        {
-          id: 1007,
-          customer: "David Lee",
-          email: "david@example.com",
-          date: "2023-04-12",
-          total: 95.2,
-          status: "Delivered",
-          method: "pickup",
-        },
-        {
-          id: 1008,
-          customer: "Lisa Taylor",
-          email: "lisa@example.com",
-          date: "2023-04-12",
-          total: 150.0,
-          status: "Processing",
-          method: "delivery",
-        },
-      ])
-      setIsLoading(false)
-    }, 1000)
+    // Safely access localStorage after component mount
+    const storedToken = localStorage.getItem("token")
+    setToken(storedToken || "")
   }, [])
+
+  useEffect(() => {
+    if (!token) return
+
+    const fetchOrders = async () => {
+      setIsLoading(true)
+      setError(null)
+
+      try {
+        const response = await fetch(`${BASE_URL}/all-orders/`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        })
+
+        if (!response.ok) {
+          throw new Error(`Error: ${response.statusText}`)
+        }
+
+        const data = await response.json()
+        setOrders(data)
+      } catch (err) {
+        setError(err.message)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchOrders()
+  }, [token, BASE_URL])
 
   const filteredOrders = filterStatus ? orders.filter((order) => order.status === filterStatus) : orders
 
-  const updateOrderStatus = (id, newStatus) => {
-    // In a real app, you would call your API to update the order status
-    setOrders(orders.map((order) => (order.id === id ? { ...order, status: newStatus } : order)))
+  const updateOrderStatus = async (id, newStatus) => {
+    try {
+      const response = await fetch(`${BASE_URL}/orders/${id}/`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ status: newStatus }),
+      })
+
+      if (!response.ok) {
+        throw new Error(`Error: ${response.statusText}`)
+      }
+
+      setOrders(orders.map((order) => (order.id === id ? { ...order, status: newStatus } : order)))
+    } catch (err) {
+      setError(err.message)
+    }
   }
 
   if (isLoading) {
@@ -103,6 +79,14 @@ export default function AdminOrders() {
         <div className="spinner-border text-primary" role="status">
           <span className="visually-hidden">Loading...</span>
         </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="text-center p-5">
+        <p className="text-danger">{error}</p>
       </div>
     )
   }
@@ -136,6 +120,7 @@ export default function AdminOrders() {
             <table className="table table-hover align-middle mb-0">
               <thead className="table-light">
                 <tr>
+                  <th>Order ID</th>
                   <th>Customer</th>
                   <th>Date</th>
                   <th>Total</th>
@@ -147,12 +132,13 @@ export default function AdminOrders() {
               <tbody>
                 {filteredOrders.map((order) => (
                   <tr key={order.id}>
+                    <td>#{order.id}</td>
                     <td>
                       <div>{order.customer}</div>
                       <small className="text-muted">{order.email}</small>
                     </td>
                     <td>{new Date(order.date).toLocaleDateString()}</td>
-                    <td>${order.total.toFixed(2)}</td>
+                    <td>${order.total_price}</td>
                     <td>
                       <span className={`badge ${order.method === "delivery" ? "bg-info" : "bg-secondary"}`}>
                         {order.method === "delivery" ? "Delivery" : "Pickup"}
@@ -185,15 +171,15 @@ export default function AdminOrders() {
                           Actions
                         </button>
                         <ul className="dropdown-menu">
-                          <li>
+                          <li key={`view-${order.id}`}>
                             <Link href={`/admin/orders/${order.id}`} className="dropdown-item">
                               View Details
                             </Link>
                           </li>
-                          <li>
+                          <li key={`divider-${order.id}`}>
                             <hr className="dropdown-divider" />
                           </li>
-                          <li>
+                          <li key={`processing-${order.id}`}>
                             <button
                               className="dropdown-item"
                               onClick={() => updateOrderStatus(order.id, "Processing")}
@@ -202,7 +188,7 @@ export default function AdminOrders() {
                               Mark as Processing
                             </button>
                           </li>
-                          <li>
+                          <li key={`shipped-${order.id}`}>
                             <button
                               className="dropdown-item"
                               onClick={() => updateOrderStatus(order.id, "Shipped")}
@@ -211,7 +197,7 @@ export default function AdminOrders() {
                               Mark as Shipped
                             </button>
                           </li>
-                          <li>
+                          <li key={`delivered-${order.id}`}>
                             <button
                               className="dropdown-item"
                               onClick={() => updateOrderStatus(order.id, "Delivered")}
@@ -220,7 +206,7 @@ export default function AdminOrders() {
                               Mark as Delivered
                             </button>
                           </li>
-                          <li>
+                          <li key={`cancelled-${order.id}`}>
                             <button
                               className="dropdown-item text-danger"
                               onClick={() => updateOrderStatus(order.id, "Cancelled")}
@@ -236,7 +222,7 @@ export default function AdminOrders() {
                 ))}
 
                 {filteredOrders.length === 0 && (
-                  <tr>
+                  <tr key="no-orders">
                     <td colSpan="7" className="text-center py-4">
                       <p className="mb-0 text-muted">No orders found</p>
                     </td>
@@ -253,22 +239,22 @@ export default function AdminOrders() {
             </p>
             <nav>
               <ul className="pagination pagination-sm mb-0">
-                <li className="page-item disabled">
+                <li className="page-item disabled" key="pagination-prev">
                   <a className="page-link" href="#" tabIndex="-1">
                     Previous
                   </a>
                 </li>
-                <li className="page-item active">
+                <li className="page-item active" key="pagination-1">
                   <a className="page-link" href="#">
                     1
                   </a>
                 </li>
-                <li className="page-item">
+                <li className="page-item" key="pagination-2">
                   <a className="page-link" href="#">
                     2
                   </a>
                 </li>
-                <li className="page-item">
+                <li className="page-item" key="pagination-next">
                   <a className="page-link" href="#">
                     Next
                   </a>

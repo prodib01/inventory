@@ -9,6 +9,11 @@ import json
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import PermissionDenied
 from .authentication import JWTAuthentication
+from orders.models import Order
+from products.models import Products
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from collections import defaultdict
 
 @csrf_exempt
 @require_http_methods(["POST"])
@@ -130,3 +135,51 @@ def get_user_profile(request):
         })
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
+
+@api_view(['GET'])
+def dashboard_stats(request):
+    user = request.user  
+    user_orders =  Order.objects.filter(products__user=user) 
+    user_products = Products.objects.filter(user=user)
+
+    total_sales = sum(order.total_price for order in user_orders)
+    total_orders = user_orders.count()
+    pending_orders = user_orders.filter(status='Processing').count()
+    low_stock_items = user_products.filter(quantity__lt=10).count()
+    total_products = user_products.count() 
+
+    return Response({
+        "totalSales": total_sales,
+        "totalOrders": total_orders,
+        "pendingOrders": pending_orders,
+        "lowStockItems": low_stock_items,
+        "totalProducts": total_products,
+    })
+
+@api_view(['GET'])
+def recent_orders(request):
+    user = request.user
+    user_orders = Order.objects.filter(products__user=user).order_by('-created_at')[:5]
+    return Response([
+        {
+            "id": order.id,
+            "customer": order.customer.full_name,
+            "date": order.created_at,
+            "total": order.total_price,
+            "status": order.status,
+        } for order in user_orders
+    ])
+
+@api_view(['GET'])
+def sales_distribution(request):
+    user = request.user
+    orders = Order.objects.filter(customer=user)
+
+    category_sales = defaultdict(int)
+
+    for order in orders:
+        for product in order.products.all():  
+            category_name = product.category.name  
+            category_sales[category_name] += order.total_price  
+
+    return Response(category_sales)    
