@@ -59,12 +59,22 @@ class User(models.Model):
         return self.full_name
     
 class Shop(models.Model):
+    CUR_CHOICES = (
+        ('UGX', 'UGX'),
+        ('USD', 'USD'),
+        ('EUR', 'EUR'),
+        ('GBP', 'GBP'),
+        ('JPY', 'JPY'),
+        ('AUD', 'AUD'),
+        ('CAD', 'CAD')
+    )
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=255, blank=True)
+    logo = models.ImageField(upload_to='shop_logos/', blank=True)
     address = models.CharField(max_length=255, blank=True)
     contact = models.CharField(max_length=255)
     email = models.EmailField(blank=True)
-    currency = models.CharField(max_length=255, blank=True)
+    currency = models.CharField(max_length=20, choices=CUR_CHOICES, default='UGX')
 
     def __str__(self):
         return self.name

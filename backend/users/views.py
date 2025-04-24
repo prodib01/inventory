@@ -131,6 +131,7 @@ def get_user_profile(request):
                 'email': user.email,
                 'full_name': user.full_name,
                 'role': user.role
+                
             }
         })
     except Exception as e:

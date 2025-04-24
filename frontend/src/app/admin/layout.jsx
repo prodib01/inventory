@@ -48,33 +48,6 @@ export default function AdminLayout({ children }) {
           <button className="btn btn-sm btn-outline-secondary d-md-none" onClick={() => setSidebarOpen(!sidebarOpen)}>
             <i className={`bi bi-${sidebarOpen ? "x" : "list"}`}></i>
           </button>
-          <div className="ms-auto d-flex align-items-center">
-            <div className="dropdown">
-              <button className="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                {user?.username || "Admin"}
-              </button>
-              <ul className="dropdown-menu dropdown-menu-end">
-                <li>
-                  <a className="dropdown-item" href="/profile">
-                    Profile
-                  </a>
-                </li>
-                <li>
-                  <a className="dropdown-item" href="/">
-                    View Store
-                  </a>
-                </li>
-                <li>
-                  <hr className="dropdown-divider" />
-                </li>
-                <li>
-                  <a className="dropdown-item" href="/logout">
-                    Logout
-                  </a>
-                </li>
-              </ul>
-            </div>
-          </div>
         </div>
 
         {children}

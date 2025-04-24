@@ -12,13 +12,9 @@ export default function AdminSettings() {
   const [error, setError] = useState(null)
   const [token, setToken] = useState("")
 
-  // Form states
   const [profileForm, setProfileForm] = useState({
-    firstName: "",
-    lastName: "",
+    fullName: "",
     email: "",
-    phone: "",
-    avatar: null,
   })
 
   const [storeForm, setStoreForm] = useState({
@@ -90,11 +86,8 @@ export default function AdminSettings() {
         // Populate form states with fetched data
         // This is a placeholder - adjust according to your actual API response
         setProfileForm({
-          firstName: data.first_name || "",
-          lastName: data.last_name || "",
+          fullName: data.full_name || "",
           email: data.email || "",
-          phone: data.phone || "",
-          avatar: null,
         })
 
         setStoreForm({
@@ -128,11 +121,8 @@ export default function AdminSettings() {
         setError(err.message)
         // For demo purposes, set some default values
         setProfileForm({
-          firstName: "John",
-          lastName: "Doe",
+          fullName: "John",
           email: "john.doe@example.com",
-          phone: "(123) 456-7890",
-          avatar: null,
         })
       } finally {
         setIsLoading(false)
@@ -204,10 +194,8 @@ export default function AdminSettings() {
       switch (activeTab) {
         case "profile":
           formData = {
-            first_name: profileForm.firstName,
-            last_name: profileForm.lastName,
+            full_name: profileForm.fullName,
             email: profileForm.email,
-            phone: profileForm.phone,
           }
           endpoint = "/user-profile/"
           break
@@ -386,65 +374,17 @@ export default function AdminSettings() {
                 <form onSubmit={handleSaveSettings}>
                   <h5 className="mb-4">Profile Settings</h5>
 
-                  <div className="mb-4 d-flex align-items-center">
-                    <div className="me-3">
-                      <div
-                        className="rounded-circle bg-light d-flex align-items-center justify-content-center"
-                        style={{ width: "80px", height: "80px" }}
-                      >
-                        {profileForm.avatar ? (
-                          <img
-                            src={URL.createObjectURL(profileForm.avatar) || "/placeholder.svg"}
-                            alt="Profile"
-                            className="rounded-circle"
-                            style={{ width: "80px", height: "80px", objectFit: "cover" }}
-                          />
-                        ) : (
-                          <i className="bi bi-person" style={{ fontSize: "2rem" }}></i>
-                        )}
-                      </div>
-                    </div>
-                    <div>
-                      <label htmlFor="avatar" className="btn btn-sm btn-outline-secondary">
-                        Change Avatar
-                      </label>
-                      <input
-                        type="file"
-                        id="avatar"
-                        name="avatar"
-                        className="d-none"
-                        accept="image/*"
-                        onChange={handleProfileChange}
-                      />
-                      <p className="text-muted small mb-0 mt-1">JPG, GIF or PNG. Max size 2MB</p>
-                    </div>
-                  </div>
-
                   <div className="row g-3">
                     <div className="col-md-6">
-                      <label htmlFor="firstName" className="form-label">
-                        First Name
+                      <label htmlFor="fullName" className="form-label">
+                        Full Name
                       </label>
                       <input
                         type="text"
                         className="form-control"
-                        id="firstName"
-                        name="firstName"
-                        value={profileForm.firstName}
-                        onChange={handleProfileChange}
-                        required
-                      />
-                    </div>
-                    <div className="col-md-6">
-                      <label htmlFor="lastName" className="form-label">
-                        Last Name
-                      </label>
-                      <input
-                        type="text"
-                        className="form-control"
-                        id="lastName"
-                        name="lastName"
-                        value={profileForm.lastName}
+                        id="fullName"
+                        name="fullName"
+                        value={profileForm.fullName}
                         onChange={handleProfileChange}
                         required
                       />
@@ -461,19 +401,6 @@ export default function AdminSettings() {
                         value={profileForm.email}
                         onChange={handleProfileChange}
                         required
-                      />
-                    </div>
-                    <div className="col-md-6">
-                      <label htmlFor="phone" className="form-label">
-                        Phone
-                      </label>
-                      <input
-                        type="tel"
-                        className="form-control"
-                        id="phone"
-                        name="phone"
-                        value={profileForm.phone}
-                        onChange={handleProfileChange}
                       />
                     </div>
                   </div>
