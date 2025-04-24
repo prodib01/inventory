@@ -9,7 +9,7 @@ export default function AdminOrders() {
   const [filterStatus, setFilterStatus] = useState("")
   const [error, setError] = useState(null)
   const [token, setToken] = useState("")
-  
+
   const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000"
 
   useEffect(() => {
@@ -39,6 +39,7 @@ export default function AdminOrders() {
         }
 
         const data = await response.json()
+        console.log("Order data:", data) // Log the data to see its structure
         setOrders(data)
       } catch (err) {
         setError(err.message)
@@ -120,7 +121,6 @@ export default function AdminOrders() {
             <table className="table table-hover align-middle mb-0">
               <thead className="table-light">
                 <tr>
-                  <th>Order ID</th>
                   <th>Customer</th>
                   <th>Date</th>
                   <th>Total</th>
@@ -132,12 +132,23 @@ export default function AdminOrders() {
               <tbody>
                 {filteredOrders.map((order) => (
                   <tr key={order.id}>
-                    <td>#{order.id}</td>
                     <td>
-                      <div>{order.customer}</div>
-                      <small className="text-muted">{order.email}</small>
+                      <div>
+                        {/* Check if customer is an object and display appropriately */}
+                        {typeof order.customer === "object" && order.customer !== null
+                          ? order.customer.full_name ||
+                            `${order.customer.first_name || ""} ${order.customer.last_name || ""}`.trim() ||
+                            "Unknown"
+                          : order.customer || "Unknown"}
+                      </div>
+                      <small className="text-muted">
+                        {/* Check if email is directly on order or in customer object */}
+                        {typeof order.customer === "object" && order.customer !== null && order.customer.email
+                          ? order.customer.email
+                          : order.email || "No email"}
+                      </small>
                     </td>
-                    <td>{new Date(order.date).toLocaleDateString()}</td>
+                    <td>{new Date(order.created_at).toLocaleDateString()}</td>
                     <td>${order.total_price}</td>
                     <td>
                       <span className={`badge ${order.method === "delivery" ? "bg-info" : "bg-secondary"}`}>
@@ -149,8 +160,6 @@ export default function AdminOrders() {
                         className={`badge ${
                           order.status === "Delivered"
                             ? "bg-success"
-                            : order.status === "Shipped"
-                              ? "bg-info"
                               : order.status === "Processing"
                                 ? "bg-primary"
                                 : order.status === "Pending"
@@ -171,11 +180,6 @@ export default function AdminOrders() {
                           Actions
                         </button>
                         <ul className="dropdown-menu">
-                          <li key={`view-${order.id}`}>
-                            <Link href={`/admin/orders/${order.id}`} className="dropdown-item">
-                              View Details
-                            </Link>
-                          </li>
                           <li key={`divider-${order.id}`}>
                             <hr className="dropdown-divider" />
                           </li>
