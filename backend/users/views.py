@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from rest_framework import viewsets
-from .models import User
+from .models import User, Shop
 from .serializers import UserSerializer
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -182,4 +182,6 @@ def sales_distribution(request):
             category_name = product.category.name  
             category_sales[category_name] += order.total_price  
 
-    return Response(category_sales)    
+    return Response(category_sales)  
+
+  

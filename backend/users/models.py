@@ -57,3 +57,13 @@ class User(models.Model):
 
     def __str__(self):
         return self.full_name
+    
+class Shop(models.Model):
+    name = models.CharField(max_length=255, blank=True)
+    address = models.CharField(max_length=255, blank=True)
+    contact = models.CharField(max_length=255)
+    email = models.EmailField(blank=True)
+    currency = models.CharField(max_length=255, blank=True)
+
+    def __str__(self):
+        return self.name

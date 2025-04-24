@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User
+from .models import User, Shop
 from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
 
@@ -51,4 +51,9 @@ class TokenSerializer(serializers.ModelSerializer):
         return str(RefreshToken.for_user(obj).access_token)
 
     def get_refresh(self, obj):
-        return str(RefreshToken.for_user(obj))      
+        return str(RefreshToken.for_user(obj))  
+
+class ShopSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Shop
+        fields = '__all__'  
