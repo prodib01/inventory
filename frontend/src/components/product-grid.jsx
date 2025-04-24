@@ -11,13 +11,9 @@ export default function ProductGrid() {
   useEffect(() => {
     const fetchProducts = async () => {
       const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
-      const token = localStorage.getItem("token")
 
       try {
         const res = await fetch(`${BASE_URL}/products/all/`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
         })
 
         if (!res.ok) throw new Error("Failed to fetch products")

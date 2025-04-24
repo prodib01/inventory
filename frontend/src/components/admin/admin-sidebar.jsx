@@ -39,7 +39,6 @@ export default function AdminSidebar({ isOpen, toggleSidebar }) {
     { path: "/admin", icon: "bi-speedometer2", text: "Dashboard" },
     { path: "/admin/products", icon: "bi-box-seam", text: "Products" },
     { path: "/admin/orders", icon: "bi-cart3", text: "Orders" },
-    { path: "/admin/reports", icon: "bi-graph-up", text: "Reports" },
     { path: "/admin/settings", icon: "bi-gear", text: "Settings" },
   ]
 

@@ -137,8 +137,8 @@ export default function AdminOrders() {
                         {/* Check if customer is an object and display appropriately */}
                         {typeof order.customer === "object" && order.customer !== null
                           ? order.customer.full_name ||
-                            `${order.customer.first_name || ""} ${order.customer.last_name || ""}`.trim() ||
-                            "Unknown"
+                          `${order.customer.first_name || ""} ${order.customer.last_name || ""}`.trim() ||
+                          "Unknown"
                           : order.customer || "Unknown"}
                       </div>
                       <small className="text-muted">
@@ -157,15 +157,14 @@ export default function AdminOrders() {
                     </td>
                     <td>
                       <span
-                        className={`badge ${
-                          order.status === "Delivered"
-                            ? "bg-success"
-                              : order.status === "Processing"
-                                ? "bg-primary"
-                                : order.status === "Pending"
-                                  ? "bg-warning"
-                                  : "bg-danger"
-                        }`}
+                        className={`badge ${order.status === "Delivered"
+                          ? "bg-success"
+                          : order.status === "Shipped"
+                            ? "bg-info"
+                            : order.status === "Processing"
+                              ? "bg-primary"
+                              : "bg-warning"
+                          }`}
                       >
                         {order.status}
                       </span>

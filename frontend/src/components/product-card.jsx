@@ -16,7 +16,7 @@ export default function ProductCard({ product }) {
   return (
     <div className="card h-100">
       <img
-        src={product.image_url || `/placeholder.svg?height=200&width=300`}
+        src={product.image || `/placeholder.svg?height=200&width=300`}
         className="card-img-top"
         alt={product.name}
         style={{ height: "200px", objectFit: "cover" }}

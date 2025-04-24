@@ -5,8 +5,12 @@ from .models import Products
 from .serializers import ProductSerializer
 from django.shortcuts import get_object_or_404
 from rest_framework.generics import ListAPIView
+from rest_framework.permissions import AllowAny
+from rest_framework.parsers import MultiPartParser, FormParser
 
 class ProductView(APIView):
+    parser_classes = (MultiPartParser, FormParser)
+
     def get(self, request):
         user_id = request.query_params.get('user_id')
 
@@ -25,7 +29,6 @@ class ProductView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    
     def put(self, request, pk=None):
         if not pk:
             return Response({"error": "Product ID required for update."}, status=status.HTTP_400_BAD_REQUEST)
@@ -37,7 +40,6 @@ class ProductView(APIView):
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    
     def delete(self, request, pk=None):
         if not pk:
             return Response({"error": "Product ID required for deletion."}, status=status.HTTP_400_BAD_REQUEST)
@@ -48,5 +50,6 @@ class ProductView(APIView):
 
 
 class AllProductsView(ListAPIView):
+    permission_classes = [AllowAny]
     queryset = Products.objects.all()
     serializer_class = ProductSerializer

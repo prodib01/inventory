@@ -1,4 +1,4 @@
-#!/home/prodi/Desktop/Projects/inventory/backend/venv/bin/python
+#!/home/baifam/Desktop/Inventory/backend/venv/bin/python3
 # -*- coding: utf-8 -*-
 import re
 import sys

@@ -34,10 +34,12 @@ CORS_ALLOWED_ORIGINS = [
 
 CORS_ALLOW_ALL_ORIGINS = True
 
+MEDIA_ROOT = BASE_DIR / "media"
+MEDIA_URL = "media/"
 
-# Application definition
 
 INSTALLED_APPS = [
+    'jazzmin',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -54,6 +56,7 @@ INSTALLED_APPS = [
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'users.authentication.JWTAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
@@ -63,6 +66,7 @@ REST_FRAMEWORK = {
 PUBLIC_PATHS = [
     '/auth/login/',
     '/auth/register/',
+    '/products/all/',
     
 ]
 
