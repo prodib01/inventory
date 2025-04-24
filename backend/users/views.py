@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from rest_framework import viewsets
 from .models import User, Shop
-from .serializers import UserSerializer
+from .serializers import UserSerializer, ShopSerializer
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_http_methods
@@ -184,4 +184,6 @@ def sales_distribution(request):
 
     return Response(category_sales)  
 
-  
+class ShopViewSet(viewsets.ModelViewSet):
+    queryset = Shop.objects.all()
+    serializer_class = ShopSerializer

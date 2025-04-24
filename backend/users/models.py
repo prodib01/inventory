@@ -59,6 +59,7 @@ class User(models.Model):
         return self.full_name
     
 class Shop(models.Model):
+    owner = models.ForeignKey(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=255, blank=True)
     address = models.CharField(max_length=255, blank=True)
     contact = models.CharField(max_length=255)
