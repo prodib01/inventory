@@ -14,6 +14,8 @@ from products.models import Products
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from collections import defaultdict
+from rest_framework.views import APIView
+from rest_framework.parsers import MultiPartParser, FormParser
 
 @csrf_exempt
 @require_http_methods(["POST"])
@@ -101,7 +103,7 @@ def login(request):
     
 
 @csrf_exempt
-@require_http_methods(["GET"])
+@require_http_methods(["GET", "PATCH"])
 def get_user_profile(request):
     try:
         # Get the token from the Authorization header
@@ -123,17 +125,40 @@ def get_user_profile(request):
         except User.DoesNotExist:
             return JsonResponse({'error': 'User not found'}, status=404)
         
+        if request.method == "GET":
+            # Return user profile data
+            return JsonResponse({
+                'user': {
+                    'id': user.id,
+                    'email': user.email,
+                    'full_name': user.full_name,
+                    'role': user.role
+                }
+            })
         
-        # Return user profile data
-        return JsonResponse({
-            'user': {
-                'id': user.id,
-                'email': user.email,
-                'full_name': user.full_name,
-                'role': user.role
-                
-            }
-        })
+        elif request.method == "PATCH":
+            # Handle PATCH request to update user profile
+            data = json.loads(request.body)
+            updated_fields = {}
+
+            # Check for fields to update and validate them
+            if 'full_name' in data:
+                user.full_name = data['full_name']
+                updated_fields['full_name'] = user.full_name
+            if 'email' in data:
+                user.email = data['email']
+                updated_fields['email'] = user.email
+            if 'role' in data:
+                user.role = data['role']
+                updated_fields['role'] = user.role
+
+            # Save the user profile changes
+            user.save()
+
+            # Return updated user profile data
+            return JsonResponse({
+                'user': updated_fields
+            })
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
 
@@ -188,3 +213,23 @@ def sales_distribution(request):
 class ShopViewSet(viewsets.ModelViewSet):
     queryset = Shop.objects.all()
     serializer_class = ShopSerializer
+
+class ShopDetailView(APIView):
+    parser_classes = [MultiPartParser, FormParser]
+
+    def get(self, request):
+        shop = Shop.objects.get(owner=request.user)
+        serializer = ShopSerializer(shop)
+        return Response(serializer.data)
+
+    def put(self, request):
+        try:
+            shop = Shop.objects.get(owner=request.user)
+        except Shop.DoesNotExist:
+            return Response({"error": "Shop not found"}, status=404)
+
+        serializer = ShopSerializer(shop, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=400)  

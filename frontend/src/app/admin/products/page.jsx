@@ -7,6 +7,7 @@ export default function AdminProducts() {
   const [products, setProducts] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
+  const [shop, setShop] = useState("")
   const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000"
 
   useEffect(() => {
@@ -40,6 +41,26 @@ export default function AdminProducts() {
       }
     }
 
+    
+    const fetchShop = async () => {
+      const token = localStorage.getItem("token")
+      try {
+        const response = await fetch(`${BASE_URL}/auth/user-shop/`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+        if (!response.ok) {
+          throw new Error(`Error: ${response.statusText}`)
+        }
+        const data = await response.json()
+        setShop(data)
+      } catch (err) {
+        console.error("Error fetching shop:", err)
+      }
+    }
+
+    fetchShop()
     fetchProducts()
   }, [])
 
@@ -168,7 +189,7 @@ export default function AdminProducts() {
               <thead className="table-light">
                 <tr>
                   <th>Product</th>
-                  <th>Price</th>
+                  <th>Price({shop.currency})</th>
                   <th>Stock</th>
                   <th>Category</th>
                   <th>Actions</th>
@@ -178,7 +199,8 @@ export default function AdminProducts() {
                 {filteredProducts.map((product) => (
                   <tr key={product.id}>
                     <td>{product.name}</td>
-                    <td>${product.price}</td>
+                    <td><td>{new Intl.NumberFormat().format(Math.floor(product.price))}</td>
+                    </td>
                     <td>
                       <span
                         className={`badge ${

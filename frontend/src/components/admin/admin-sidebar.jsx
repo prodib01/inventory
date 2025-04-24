@@ -52,7 +52,7 @@ export default function AdminSidebar({ isOpen, toggleSidebar }) {
     const fetchShop = async () => {
       const token = localStorage.getItem("token");
       try {
-        const res = await fetch(`${BASE_URL}/auth/shop/`, {
+        const res = await fetch(`${BASE_URL}/auth/user-shop/`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -60,9 +60,7 @@ export default function AdminSidebar({ isOpen, toggleSidebar }) {
         if (!res.ok) throw new Error("Failed to fetch shop");
         const data = await res.json();
         console.log("shop", data);
-        if (Array.isArray(data) && data.length > 0) {
-          setShop(data[0]);
-        }
+        setShop(data);
       } catch (error) {
         console.error("Error fetching shop:", error);
       }
@@ -110,7 +108,7 @@ export default function AdminSidebar({ isOpen, toggleSidebar }) {
         <div className="d-flex align-items-center p-3 border-bottom border-secondary">
           {shop && (
             <img
-              src={shop.logo}
+              src={`${BASE_URL}/${shop.logo}`}
               alt={shop.name}
               style={{
                 width: "40px",

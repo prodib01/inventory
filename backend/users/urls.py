@@ -1,5 +1,5 @@
 from django.urls import path, include
-from .views import login, register, dashboard_stats, recent_orders, sales_distribution, ShopViewSet, get_user_profile
+from .views import login, register, dashboard_stats, recent_orders, sales_distribution, ShopViewSet, get_user_profile, ShopDetailView
 from rest_framework.routers import DefaultRouter
 from django.conf import settings
 from django.conf.urls.static import static
@@ -16,6 +16,7 @@ urlpatterns = [
     path('sales-distribution/', sales_distribution, name='sales-distribution'),
     path('', include(router.urls)),
     path('profile/', get_user_profile, name='profile'),
+    path('user-shop/', ShopDetailView.as_view(), name='user-shop'),
 ]
 
 if settings.DEBUG:

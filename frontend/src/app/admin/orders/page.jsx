@@ -10,12 +10,12 @@ export default function AdminOrders() {
   const [filterStatus, setFilterStatus] = useState("")
   const [error, setError] = useState(null)
   const [token, setToken] = useState("")
+  const [shop, setShop] = useState("")
   const [activeDropdown, setActiveDropdown] = useState(null)
 
   const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000"
 
   useEffect(() => {
-    // Safely access localStorage after component mount
     try {
       const storedToken = localStorage.getItem("token")
       setToken(storedToken || "")
@@ -54,6 +54,24 @@ export default function AdminOrders() {
       }
     }
 
+    const fetchShop = async () => {
+      try {
+        const response = await fetch(`${BASE_URL}/auth/user-shop/`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
+        if (!response.ok) {
+          throw new Error(`Error: ${response.statusText}`)
+        }
+        const data = await response.json()
+        setShop(data)
+      } catch (err) {
+        console.error("Error fetching shop:", err)
+      }
+    }
+
+    fetchShop()
     fetchOrders()
   }, [token, BASE_URL])
 
@@ -159,7 +177,7 @@ export default function AdminOrders() {
                   <tr>
                     <th>Customer</th>
                     <th>Date</th>
-                    <th>Total</th>
+                    <th>Total({shop.currency})</th>
                     <th>Method</th>
                     <th>Status</th>
                     <th>Actions</th>
@@ -184,7 +202,8 @@ export default function AdminOrders() {
                           </small>
                         </td>
                         <td>{new Date(order.created_at).toLocaleDateString()}</td>
-                        <td>${order.total_price}</td>
+                        <td><td>{new Intl.NumberFormat().format(Math.floor(order.total_price))}</td>
+                        </td>
                         <td>
                           <span className={`badge ${order.method === "delivery" ? "bg-info" : "bg-secondary"}`}>
                             {order.method === "delivery" ? "Delivery" : "Pickup"}
