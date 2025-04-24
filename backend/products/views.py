@@ -15,7 +15,7 @@ class ProductView(APIView):
         user_id = request.query_params.get('user_id')
 
         if user_id:
-            products = Products.objects.filter(user_id=user_id)
+            products = Products.objects.filter(shop__owner__id=user_id)
         else:
             products = Products.objects.all()
 

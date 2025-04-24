@@ -7,6 +7,13 @@ from rest_framework.exceptions import NotFound
 from rest_framework.permissions import IsAuthenticated
 
 class OrderDetailView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        orders = Order.objects.filter(products__shop__owner=user).distinct()
+        serializer = OrderSerializer(orders, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request):
         serializer = OrderSerializer(data=request.data, context={'request': request})  
@@ -22,7 +29,6 @@ class OrderDetailView(APIView):
                 'created_at': order.created_at
             }, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
     def patch(self, request, *args, **kwargs):
         try:
@@ -53,16 +59,17 @@ class OrderDetailView(APIView):
 
 class OrderListView(APIView):
     def get(self, request, *args, **kwargs):
-        orders = Order.objects.all()
+        orders = Order.objects.filter(customer=request.user)
         serializer = OrderSerializer(orders, many=True)  
         return Response(serializer.data, status=status.HTTP_200_OK)
+        
     
 
 class DeliveryBySeller(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        deliveries = Delivery.objects.filter(order__products__user=request.user).distinct()
+        deliveries = Delivery.objects.filter(order__products__shop_owner=request.user).distinct()
         serializer = DeliverySerializer(deliveries, many=True)
         return Response(serializer.data)
 
@@ -111,7 +118,7 @@ class PickupBySeller(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        pickups = Pickup.objects.filter(order__products__user=request.user).distinct()
+        pickups = Pickup.objects.filter(order__products__shop_owner=request.user).distinct()
         serializer = PickupSerializer(pickups, many=True)
         return Response(serializer.data)
 

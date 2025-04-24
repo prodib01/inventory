@@ -32,7 +32,7 @@ export default function AdminOrders() {
       setError(null)
 
       try {
-        const response = await fetch(`${BASE_URL}/all-orders/`, {
+        const response = await fetch(`${BASE_URL}/orders/`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",

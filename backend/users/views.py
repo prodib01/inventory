@@ -165,8 +165,8 @@ def get_user_profile(request):
 @api_view(['GET'])
 def dashboard_stats(request):
     user = request.user  
-    user_orders =  Order.objects.filter(products__user=user) 
-    user_products = Products.objects.filter(user=user)
+    user_orders =  Order.objects.filter(products__shop__owner=user) 
+    user_products = Products.objects.filter(shop__owner=user)
 
     total_sales = sum(order.total_price for order in user_orders)
     total_orders = user_orders.count()
@@ -185,7 +185,7 @@ def dashboard_stats(request):
 @api_view(['GET'])
 def recent_orders(request):
     user = request.user
-    user_orders = Order.objects.filter(products__user=user).order_by('-created_at')[:5]
+    user_orders = Order.objects.filter(products__shop__owner=user).order_by('-created_at')[:5]
     return Response([
         {
             "id": order.id,

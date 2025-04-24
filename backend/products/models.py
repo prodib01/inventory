@@ -1,5 +1,5 @@
 from django.db import models
-from users.models import User
+from users.models import Shop
 
 class Category(models.Model):
     name = models.CharField(max_length=255)
@@ -8,7 +8,7 @@ class Category(models.Model):
         return self.name
 
 class Products(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    shop = models.ForeignKey(Shop, on_delete=models.CASCADE)
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
     image = models.ImageField(upload_to='products/')
