@@ -1,9 +1,10 @@
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
-from .views import OrderDetailView, OrderListView, PickupBySeller, PickupByCustomer, PickupCRUD, DeliveryBySeller, DeliveryByCustomer, DeliveryCRUD 
+from .views import OrderDetailView, OrderListView, PickupBySeller, PickupByCustomer, PickupCRUD, DeliveryBySeller, DeliveryByCustomer, DeliveryCRUD, CheckoutView
 
 urlpatterns = [
     path('orders/', OrderDetailView.as_view(), name='order-create'),
+    path('checkout/', CheckoutView.as_view(), name='checkout'),
     path('orders/<str:order_number>/', OrderDetailView.as_view(), name='order-detail'),  
     path('all-orders/', OrderListView.as_view(), name='order-list' ),
     path('delivery/by-seller/', DeliveryBySeller.as_view(), name='delivery-by-seller'),

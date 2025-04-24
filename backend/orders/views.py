@@ -9,15 +9,15 @@ from rest_framework.permissions import IsAuthenticated
 class OrderDetailView(APIView):
 
     def post(self, request):
-        print("Authe", request.user)
         serializer = OrderSerializer(data=request.data, context={'request': request})  
         if serializer.is_valid():
             order = serializer.save()
             return Response({
                 'id': order.id,  
                 'order_number': order.order_number,
+                'method': order.method,
+                'status': order.status,
                 'total_price': order.total_price,
-                'paid': order.paid,
                 'products': [product.id for product in order.products.all()],
                 'created_at': order.created_at
             }, status=status.HTTP_201_CREATED)
@@ -154,3 +154,72 @@ class PickupCRUD(APIView):
 
         pickup.delete()
         return Response(status=status.HTTP_204_NO_CONTENT) 
+    
+class CheckoutView(APIView):
+    permission_classes = [IsAuthenticated]
+    
+    def post(self, request):
+        # Print received data for debugging
+        print("Received checkout data:", request.data)
+        
+        # Prepare order data
+        order_data = {
+            'products_data': request.data.get('products', []),
+            'method': request.data.get('method'),
+            'status': 'processing'
+        }
+        
+        # Create order serializer with request context
+        order_serializer = OrderSerializer(data=order_data, context={'request': request})
+        
+        if order_serializer.is_valid():
+            order = order_serializer.save()
+            print(f"Order created with ID {order.id}, method: {order.method}, products count: {order.products.count()}")
+            
+            # Handle delivery or pickup based on method
+            if order.method == 'delivery':
+                delivery_data = {
+                    'order_id': order.id,
+                    'address': request.data.get('address', '')
+                }
+                delivery_serializer = DeliverySerializer(data=delivery_data)
+                
+                if delivery_serializer.is_valid():
+                    delivery = delivery_serializer.save()
+                    print(f"Delivery created with address: {delivery.address}")
+                else:
+                    # If delivery creation fails, delete the order and return error
+                    print("Delivery validation errors:", delivery_serializer.errors)
+                    order.delete()
+                    return Response(delivery_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                    
+            elif order.method == 'pickup':
+                pickup_data = {
+                    'order_id': order.id,
+                    'pickup_date': request.data.get('pickup_date'),
+                    'pickup_time': request.data.get('pickup_time')
+                }
+                pickup_serializer = PickupSerializer(data=pickup_data)
+                
+                if pickup_serializer.is_valid():
+                    pickup = pickup_serializer.save()
+                    print(f"Pickup created for date: {pickup.pickup_date}, time: {pickup.pickup_time}")
+                else:
+                    # If pickup creation fails, delete the order and return error
+                    print("Pickup validation errors:", pickup_serializer.errors)
+                    order.delete()
+                    return Response(pickup_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Return successful response with order details
+            return Response({
+                'id': order.id,
+                'order_number': order.order_number,
+                'method': order.method,
+                'status': order.status,
+                'total_price': str(order.total_price)
+            }, status=status.HTTP_201_CREATED)
+        else:
+            print("Order validation errors:", order_serializer.errors)
+            for field, errors in order_serializer.errors.items():
+                print(f"Field '{field}' errors: {errors}")
+            return Response(order_serializer.errors, status=status.HTTP_400_BAD_REQUEST) 

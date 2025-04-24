@@ -30,7 +30,7 @@ export default function CheckoutPage() {
     return null
   }
 
-  // Redirect to home if cart is empty
+  
   if (items.length === 0 && !success) {
     router.push("/")
     return null
@@ -46,97 +46,43 @@ export default function CheckoutPage() {
     try {
       const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000"
       const token = localStorage.getItem("token")
-
+    
       if (!token) {
         setError("You must be logged in to place an order")
         return
       }
-
-      const orderData = {
-        products: items.map(item => Number(item.id))
+    
+      // Create a single request with all data
+      const checkoutData = {
+        products: items.map(item => Number(item.id)),
+        method: deliveryMethod,
       }
-      
-    //   console.log("Sending order data:", JSON.stringify(orderData))
-      
 
-      const orderResponse = await fetch(`${BASE_URL}/orders/`, {
+      console.log("data", checkoutData)
+      
+      // Add delivery or pickup specific fields
+      if (deliveryMethod === "delivery") {
+        checkoutData.address = address
+      } else {
+        checkoutData.pickup_date = pickupDate
+        checkoutData.pickup_time = pickupTime
+      }
+    
+      const orderResponse = await fetch(`${BASE_URL}/checkout/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        
-        body: JSON.stringify(orderData),
+        body: JSON.stringify(checkoutData),
       })
-
-      console.log("Sending order data:", JSON.stringify(orderData))
-      console.log("Order Data to be sent:", JSON.stringify(orderData, null, 2))
-
-
+    
       if (!orderResponse.ok) {
-        const errorData = await orderResponse.json();
-        console.error("Server error response:", errorData);
-        
-        
-        // Check for specific product not found error
-        if (errorData.products && errorData.products[0].includes("object does not exist")) {
-          setError("One or more products in your cart no longer exist. Please refresh your cart.");
-        } else {
-          setError(errorData.detail || "Failed to create order. Please try again.");
-        }
-        return;
+        const errorData = await orderResponse.json()
+        setError(errorData.detail || "Failed to create order. Please try again.")
+        return
       }
-
-      // Get the order ID from the response
-      const orderResult = await orderResponse.json()
-      const orderId = orderResult.id
-
-      // Step 2: Save delivery or pickup details based on the method
-      if (deliveryMethod === "delivery") {
-        // Save delivery details
-        const deliveryData = {
-          order_id: orderId,
-          address,
-        }
-
-        const deliveryResponse = await fetch(`${BASE_URL}/delivery/`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(deliveryData),
-        })
-
-        if (!deliveryResponse.ok) {
-          const errorData = await deliveryResponse.json()
-          setError(errorData.detail || "Failed to save delivery details. Please try again.")
-          return
-        }
-      } else {
-        // Save pickup details
-        const pickupData = {
-          order_id: orderId,
-          pickup_date: pickupDate,
-          pickup_time: pickupTime,
-        }
-
-        const pickupResponse = await fetch(`${BASE_URL}/pickup/`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(pickupData),
-        })
-
-        if (!pickupResponse.ok) {
-          const errorData = await pickupResponse.json()
-          setError(errorData.detail || "Failed to save pickup details. Please try again.")
-          return
-        }
-      }
-
+    
       // If everything is successful, clear the cart and show success message
       clearCart()
       setSuccess(true)
